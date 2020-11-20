@@ -5,6 +5,18 @@ using UnityEngine;
 using unity4dv;
 using UnityEngine.Rendering;
 
+[System.Serializable]
+public class CameraParamList{
+    public List<CameraParam> arr = new List<CameraParam>();
+}
+
+[System.Serializable]
+public class CameraParam{
+    public int id;
+    public string img;
+    public Matrix4x4 mat;
+}
+
 public class MultiCameraController : MonoBehaviour
 {
     public float initAngle = -90.0f;
@@ -96,13 +108,27 @@ public class MultiCameraController : MonoBehaviour
 
     void SaveScreenShot()
     {
+
+        CameraParamList list= new CameraParamList();
+
         for(int i = 0; i < cameras.Length; ++i)
         {
-            SaveRenderTextureToFile(cameras[i].targetTexture, i.ToString());
+            CameraParam cam = new CameraParam();
+            cam.mat = cameras[i].projectionMatrix  * cameras[i].worldToCameraMatrix;
+            cam.id = i;
+
+            cam.img = "/"+i.ToString()+".png";
+            string imgPath = SaveRenderTextureToFile(cameras[i].targetTexture, cam.img);
+
+            list.arr.Add(cam);
         }
+
+        string camInfo = JsonUtility.ToJson(list);
+        System.IO.File.WriteAllText(Application.streamingAssetsPath + "/camera.json", camInfo);  
+
     }
 
-    private void SaveRenderTextureToFile(RenderTexture rt, string fileName)
+    private string SaveRenderTextureToFile(RenderTexture rt, string fileName)
     {
         RenderTexture.active = rt;
         Texture2D tex = new Texture2D(rt.width, rt.height, TextureFormat.RGB24, false);
@@ -112,7 +138,8 @@ public class MultiCameraController : MonoBehaviour
         byte[] bytes;
         bytes = tex.EncodeToPNG();
 
-        string path = Application.streamingAssetsPath + "/" + fileName + ".png";
+        string path = Application.streamingAssetsPath + fileName;
         System.IO.File.WriteAllBytes(path, bytes);
+        return path;
     }
 }
