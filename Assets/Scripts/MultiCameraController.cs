@@ -7,14 +7,17 @@ using UnityEngine.Rendering;
 
 [System.Serializable]
 public class CameraParamList{
-    public List<CameraParam> arr = new List<CameraParam>();
+    public List<CameraParam> camera = new List<CameraParam>();
 }
 
 [System.Serializable]
 public class CameraParam{
     public int id;
     public string img;
-    public Matrix4x4 mat;
+    public Matrix4x4 world2screenMat;
+    public Vector3 pos;
+    public Quaternion quat;
+
 }
 
 public class MultiCameraController : MonoBehaviour
@@ -114,13 +117,15 @@ public class MultiCameraController : MonoBehaviour
         for(int i = 0; i < cameras.Length; ++i)
         {
             CameraParam cam = new CameraParam();
-            cam.mat = cameras[i].projectionMatrix  * cameras[i].worldToCameraMatrix;
+            cam.world2screenMat = cameras[i].projectionMatrix  * cameras[i].worldToCameraMatrix;
             cam.id = i;
+            cam.pos = cameras[i].transform.position;
+            cam.quat = cameras[i].transform.rotation;
 
             cam.img = "/"+i.ToString()+".png";
             string imgPath = SaveRenderTextureToFile(cameras[i].targetTexture, cam.img);
 
-            list.arr.Add(cam);
+            list.camera.Add(cam);
         }
 
         string camInfo = JsonUtility.ToJson(list);
