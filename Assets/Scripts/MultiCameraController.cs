@@ -31,6 +31,11 @@ public class MultiCameraController : MonoBehaviour
     private RenderTexture[] renderTextures;
     private int activeCameraID = 0;
 
+    private bool isRecord = false;
+    private const int recordLen = 10;
+    private int curRecordFrame = 0;
+
+
     void Awake()
     {
         RenderPipelineManager.endFrameRendering += RenderPipelineManager_endFrameRendering;
@@ -92,9 +97,20 @@ public class MultiCameraController : MonoBehaviour
                 fakeScene.Play(true);
             }
         }
-        else if(Input.GetKeyDown(KeyCode.S))
+        else if(Input.GetKeyDown(KeyCode.S) && !isRecord)
         {
-            SaveScreenShot();
+            isRecord = true;
+            curRecordFrame = 0;
+        }
+
+        //handle record
+        if (isRecord) {
+            //record
+            SaveScreenShot(curRecordFrame);
+            //check record finish
+            curRecordFrame++;
+            if (curRecordFrame >= recordLen)
+                isRecord = false;
         }
     }
 
@@ -109,7 +125,7 @@ public class MultiCameraController : MonoBehaviour
         //mainCamera.transform.rotation = cameras[activeCameraID].transform.rotation;
     }
 
-    void SaveScreenShot()
+    void SaveScreenShot(int curFrame)
     {
 
         CameraParamList list= new CameraParamList();
@@ -122,9 +138,9 @@ public class MultiCameraController : MonoBehaviour
             cam.pos = cameras[i].transform.position;
             cam.quat = cameras[i].transform.rotation;
 
-            cam.img = "/"+i.ToString()+".png";
+            cam.img = "/"+i.ToString()+"_" + curFrame + ".png";
             string imgPath = SaveRenderTextureToFile(cameras[i].targetTexture, cam.img);
-
+            Debug.Log(imgPath);
             list.camera.Add(cam);
         }
 
