@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -24,6 +24,8 @@ public class CameraParam {
 public class MultiCameraController : MonoBehaviour {
     public float initAngle = -90.0f;
     public float radius = 3.5f;
+    public float colume = 3.0f;
+
     public Plugin4DS fakeScene;
     public Camera mainCamera;
 
@@ -45,24 +47,28 @@ public class MultiCameraController : MonoBehaviour {
         cameras = GetComponentsInChildren<Camera>();
         renderTextures = new RenderTexture[cameras.Length];
 
-        float angleStep = 360 / cameras.Length;
-        float currentAngle = initAngle;
+        float angleStep = 360 / cameras.Length * colume;
 
         camData = new List<List<byte[]>>();
 
-        for (int i = 0; i < cameras.Length; ++i) {
-            float rad = currentAngle * Mathf.Deg2Rad;
-            Vector3 newPosition = new Vector3(radius * Mathf.Cos(rad), 0.0f, radius * Mathf.Sin(rad)) + this.transform.position;
-            cameras[i].transform.position = newPosition;
-            cameras[i].transform.rotation = Quaternion.LookRotation(this.transform.position - newPosition, Vector3.up);
-            currentAngle += angleStep;
+        for(int c =0 ; c <colume;++c){
+            float currentAngle = initAngle;
+            for (int j = 0; j < cameras.Length/colume; ++j) {
+                int i = c*10+j;
 
-            renderTextures[i] = new RenderTexture(960, 540, 24, RenderTextureFormat.ARGB32);
-            renderTextures[i].depth = 0;
-            renderTextures[i].Create();
+                float rad = currentAngle * Mathf.Deg2Rad;
+                Vector3 newPosition = new Vector3(radius * Mathf.Cos(rad), c, radius * Mathf.Sin(rad)) + this.transform.position;
+                cameras[i].transform.position = newPosition;
+                cameras[i].transform.rotation = Quaternion.LookRotation(this.transform.position - newPosition, Vector3.up);
+                currentAngle += angleStep;
 
-            cameras[i].targetTexture = renderTextures[i];
-            camData.Add(new List<byte[]>());
+                renderTextures[i] = new RenderTexture(960, 540, 24, RenderTextureFormat.ARGB32);
+                renderTextures[i].depth = 0;
+                renderTextures[i].Create();
+
+                cameras[i].targetTexture = renderTextures[i];
+                camData.Add(new List<byte[]>());
+            }
         }
 
 
