@@ -49,7 +49,7 @@ public class MultiCameraController : MonoBehaviour {
         cameras = GetComponentsInChildren<Camera>();
         renderTextures = new RenderTexture[cameras.Length];
 
-        float angleStep = 360 / cameras.Length * colume;
+        float angleStep = 360 / (cameras.Length / colume);
 
         camData = new List<List<byte[]>>();
 
@@ -73,7 +73,18 @@ public class MultiCameraController : MonoBehaviour {
             }
         }
 
+        // top origion
+        int last = cameras.Length-1;
+        Vector3 newPosition2 = new Vector3(0, colume+1, 0);
+        cameras[last].transform.position = newPosition2;
+        cameras[last].transform.rotation = Quaternion.LookRotation(this.transform.position - newPosition2, Vector3.up);
 
+        renderTextures[last] = new RenderTexture(960, 540, 24, RenderTextureFormat.ARGB32);
+        renderTextures[last].depth = 0;
+        renderTextures[last].Create();
+
+        cameras[last].targetTexture = renderTextures[last];
+        camData.Add(new List<byte[]>());
 
     }
 
