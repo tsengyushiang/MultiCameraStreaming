@@ -15,6 +15,8 @@ public class CameraParamList {
 public class CameraParam {
     public int id;
     public string[] img;
+    public Matrix4x4 worldToCameraMatrix;
+    public Matrix4x4 projectionMatrix;
     public Matrix4x4 world2screenMat;
     public Vector3 pos;
     public Quaternion quat;
@@ -127,13 +129,15 @@ public class MultiCameraController : MonoBehaviour {
 
         for (int i = 0; i < cameras.Length; ++i) {
             CameraParam cam = new CameraParam();
+            cam.projectionMatrix = cameras[i].worldToCameraMatrix;
+            cam.worldToCameraMatrix = cameras[i].worldToCameraMatrix;
             cam.world2screenMat = cameras[i].projectionMatrix * cameras[i].worldToCameraMatrix;
             cam.id = i;
             cam.pos = cameras[i].transform.position;
             cam.quat = cameras[i].transform.rotation;
             cam.img = new string[len];
             for (int frame = 0; frame < len; frame++) {
-                cam.img[frame] = "/" + i.ToString() + "_" + frame + ".png";
+                cam.img[frame] = "./" + i.ToString() + "_" + frame + ".png";
             }
             list.camera.Add(cam);
         }
