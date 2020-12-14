@@ -64,7 +64,7 @@ public class MultiCameraController : MonoBehaviour {
                 cameras[i].transform.rotation = Quaternion.LookRotation(this.transform.position - newPosition, Vector3.up);
                 currentAngle += angleStep;
 
-                renderTextures[i] = new RenderTexture(960, 540, 24, RenderTextureFormat.ARGB32);
+                renderTextures[i] = new RenderTexture(3840, 2160, 24, RenderTextureFormat.ARGB32);
                 renderTextures[i].depth = 0;
                 renderTextures[i].Create();
 
@@ -79,7 +79,7 @@ public class MultiCameraController : MonoBehaviour {
         cameras[last].transform.position = newPosition2;
         cameras[last].transform.rotation = Quaternion.LookRotation(this.transform.position - newPosition2, Vector3.up);
 
-        renderTextures[last] = new RenderTexture(960, 540, 24, RenderTextureFormat.ARGB32);
+        renderTextures[last] = new RenderTexture(3840, 2160, 24, RenderTextureFormat.ARGB32);
         renderTextures[last].depth = 0;
         renderTextures[last].Create();
 
