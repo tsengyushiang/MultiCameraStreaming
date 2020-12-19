@@ -23,10 +23,10 @@ public class CameraParam {
 
 }
 
-public class MultiCameraController : MonoBehaviour {
-    public float initAngle = -90.0f;
-    public float radius = 3.5f;
+public class MultiCameraController : MonoBehaviour {  
     public float colume = 3.0f;
+    public float width = 16.0f;
+    public float height = 9.0f;
 
     public Plugin4DS fakeScene;
     public Camera mainCamera;
@@ -36,7 +36,7 @@ public class MultiCameraController : MonoBehaviour {
     private int activeCameraID = 0;
 
     private bool isRecord = false;
-    private const int recordLen = 10;
+    private const int recordLen = 1;
     private int curRecordFrame = 0;
     private bool isSaving = false;
 
@@ -53,16 +53,64 @@ public class MultiCameraController : MonoBehaviour {
 
         camData = new List<List<byte[]>>();
 
+        float perimeter = (width+height)*2;
+        float unit = perimeter/((cameras.Length-1)/colume);        
+
         for(int c =0 ; c <colume;++c){
-            float currentAngle = initAngle;
+            float currentLengthX = 0;
+            float currentLengthY = 0;
+            float state = 0 ;
+            /*
+            0:first width
+            1:first Height
+            2:second width
+            3:second Height
+            */           
+
             for (int j = 0; j < cameras.Length/colume; ++j) {
                 int i = c*10+j;
+                
 
-                float rad = currentAngle * Mathf.Deg2Rad;
-                Vector3 newPosition = new Vector3(radius * Mathf.Cos(rad), c, radius * Mathf.Sin(rad)) + this.transform.position;
+                Vector3 newPosition = this.transform.position;
+                newPosition += new Vector3(currentLengthX,c,currentLengthY);
+                newPosition -= new Vector3(width/2.0f,0,height/2.0f);
+
+                switch (state)
+                {
+                    case 0:
+                        currentLengthX += unit;
+                        if(currentLengthX>width){
+                            currentLengthY += (currentLengthX-width);
+                            currentLengthX = width;
+                            state = 1;
+                        }
+                        break;
+                    case 1:
+                        currentLengthY += unit;
+                        if(currentLengthY>height){
+                            currentLengthX -= (currentLengthY-height);
+                            currentLengthY = height;
+                            state = 2;
+                        }
+                        break;
+                    case 2:
+                        currentLengthX -= unit;
+                        if(currentLengthX<0){
+                            currentLengthY -= (0-currentLengthX);
+                            currentLengthX = 0;
+                            state = 2;
+                        }
+                        break;
+                    case 3:
+                        currentLengthY -= unit;
+                        if(currentLengthY<0){
+                            currentLengthY = 0;
+                        }
+                        break;
+                }
+
                 cameras[i].transform.position = newPosition;
                 cameras[i].transform.rotation = Quaternion.LookRotation(this.transform.position - newPosition, Vector3.up);
-                currentAngle += angleStep;
 
                 renderTextures[i] = new RenderTexture(3840, 2160, 24, RenderTextureFormat.ARGB32);
                 renderTextures[i].depth = 0;
@@ -75,7 +123,7 @@ public class MultiCameraController : MonoBehaviour {
 
         // top origion
         int last = cameras.Length-1;
-        Vector3 newPosition2 = new Vector3(0, colume+1, 0);
+        Vector3 newPosition2 = new Vector3(0, 6, 0);
         cameras[last].transform.position = newPosition2;
         cameras[last].transform.rotation = Quaternion.LookRotation(this.transform.position - newPosition2, Vector3.up);
 
@@ -112,6 +160,7 @@ public class MultiCameraController : MonoBehaviour {
                 fakeScene.Play(true);
             }
         } else if (Input.GetKeyDown(KeyCode.S) && !isRecord) {
+            Debug.Log(Application.streamingAssetsPath);
             isRecord = true;
             curRecordFrame = 0;
         }
